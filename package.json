@@ -1,0 +1,23 @@
+{
+  "name": "bible-api",
+  "version": "1.0.0",
+  "description": "api for Spanish catholic bible and some other features from Catholic Church",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/escalantedanny/bible-api.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/escalantedanny/bible-api/issues"
+  },
+  "homepage": "https://github.com/escalantedanny/bible-api#readme",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
