@@ -14,6 +14,7 @@ const biblia = {};
 for (const key in originalBiblia) {
   biblia[key.toLowerCase()] = originalBiblia[key];
 }
+
 // Ruta principal de libros
 app.get('/libros', (req, res) => {
   const libros = Object.keys(biblia);
@@ -35,26 +36,88 @@ app.get('/libros/:libro', (req, res) => {
   }
 });
 
-// Ruta para obtener un capítulo específico de un libro
-app.get('/libros/:libro/:capitulo', (req, res) => {
+// Ruta para obtener capítulos de un libro (por ejemplo, "genesis")
+app.get('/libros/:libro/capitulos', (req, res) => {
   const libro = req.params.libro.toLowerCase();
-  const capitulo = req.params.capitulo;
-  if (biblia[libro] && biblia[libro][capitulo]) {
-    res.json(biblia[libro][capitulo]);
+  const contenido = biblia[libro];
+
+  if (contenido && contenido.chapters) {
+    const capitulos = contenido.chapters.map(chapter => chapter.chapter);
+    console.log(capitulos);
+    
+    res.json(capitulos);
   } else {
-    res.status(404).json({ error: 'Capítulo no encontrado' });
+    res.status(404).json({ error: 'Capítulos no encontrados' });
   }
 });
 
-// Ruta para obtener un versículo específico de un capítulo
-app.get('/libros/:libro/:capitulo/:versiculo', (req, res) => {
+// Ruta para obtener un capítulo específico de un libro (por ejemplo, "genesis" y "1")
+app.get('/libros/:libro/capitulos/:capitulo', (req, res) => {
+  const libro = req.params.libro.toLowerCase();
+  const capitulo = req.params.capitulo;
+
+  const contenido = biblia[libro];
+  if (contenido && contenido.chapters) {
+    const chapter = contenido.chapters.find(ch => ch.chapter === capitulo);
+    if (chapter) {
+      res.json(chapter);
+    } else {
+      res.status(404).json({ error: 'Capítulo no encontrado' });
+    }
+  } else {
+    res.status(404).json({ error: 'Libro o capítulos no encontrados' });
+  }
+});
+
+// Ruta para obtener un versículo específico de un libro y capítulo (por ejemplo, "genesis", "1", "1")
+app.get('/libros/:libro/capitulos/:capitulo/versiculos/:versiculo', (req, res) => {
   const libro = req.params.libro.toLowerCase();
   const capitulo = req.params.capitulo;
   const versiculo = req.params.versiculo;
-  if (biblia[libro] && biblia[libro][capitulo] && biblia[libro][capitulo][versiculo]) {
-    res.json(biblia[libro][capitulo][versiculo]);
+
+  const contenido = biblia[libro];
+  if (contenido && contenido.chapters) {
+    const chapter = contenido.chapters.find(ch => ch.chapter === capitulo);
+    if (chapter && chapter.verses && chapter.verses[versiculo]) {
+      res.json({ [versiculo]: chapter.verses[versiculo] });
+    } else {
+      res.status(404).json({ error: 'Versículo no encontrado' });
+    }
   } else {
-    res.status(404).json({ error: 'Versículo no encontrado' });
+    res.status(404).json({ error: 'Libro, capítulo o versículo no encontrados' });
+  }
+});
+
+// Ruta para obtener múltiples versículos de un capítulo de un libro (por ejemplo, "genesis/1")
+app.get('/libros/:libro/capitulos/:capitulo/versiculos', (req, res) => {
+  const libro = req.params.libro.toLowerCase();
+  const capitulo = req.params.capitulo;
+  const contenido = biblia[libro];
+
+  // Obtener los versículos solicitados desde el parámetro query
+  const versiculosSolicitados = req.query.versiculos ? req.query.versiculos.split(',') : [];
+
+  if (contenido && contenido.chapters) {
+    const capítulo = contenido.chapters.find(ch => ch.chapter === capitulo);
+    if (capítulo && capítulo.verses) {
+      // Si se han solicitado versículos específicos, devolver solo esos
+      if (versiculosSolicitados.length > 0) {
+        const versiculos = {};
+        versiculosSolicitados.forEach(num => {
+          if (capítulo.verses[num]) {
+            versiculos[num] = capítulo.verses[num];
+          }
+        });
+        res.json(versiculos);
+      } else {
+        // Si no se han solicitado versículos específicos, devolver todos los versículos del capítulo
+        res.json(capítulo.verses);
+      }
+    } else {
+      res.status(404).json({ error: 'Versículos no encontrados en este capítulo' });
+    }
+  } else {
+    res.status(404).json({ error: 'Capítulo no encontrado' });
   }
 });
 
