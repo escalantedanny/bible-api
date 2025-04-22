@@ -1,6 +1,7 @@
 {
   "name": "bible-api",
   "version": "1.0.0",
+  "type": "module",
   "description": "api for Spanish catholic bible and some other features from Catholic Church",
   "main": "index.js",
   "scripts": {
