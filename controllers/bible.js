@@ -117,11 +117,13 @@ export async function getVersicle(req, res) {
 }
 
 export async function getVersicleOfLove(req, res) {
+  const temasPopulares = ["amor", "fe", "esperanza", "gracia", "oración", "vida", "pecado", "lujuria", "Dios"];
+  const versiculosPopulares = []; 
+  
   // Obtener todos los libros disponibles
   const libros = Object.keys(biblia);
-  const versiculosDeAmor = []; // Array para almacenar los versículos de amor
-
-  // Buscar versículos que contienen la palabra 'amor' en el texto
+  
+  // Buscar versículos que contengan las palabras clave en el texto
   for (const libro of libros) {
     const contenido = biblia[libro];
     if (contenido && contenido.chapters) {
@@ -129,14 +131,18 @@ export async function getVersicleOfLove(req, res) {
         if (chapter.verses) {
           for (const versiculo in chapter.verses) {
             const texto = chapter.verses[versiculo];
-            // Verificar si el texto del versículo contiene la palabra 'amor'
-            if (texto.toLowerCase().includes("amor")) {
-              versiculosDeAmor.push({
-                libro: libro,
-                capitulo: chapter.chapter,
-                versiculo: versiculo,
-                texto: texto
-              });
+            // Verificar si el texto del versículo contiene alguna de las palabras clave
+            for (const tema of temasPopulares) {
+              if (texto.toLowerCase().includes(tema)) {
+                versiculosPopulares.push({
+                  libro: libro,
+                  capitulo: chapter.chapter,
+                  versiculo: versiculo,
+                  texto: texto,
+                  tema: tema  // Guardar el tema asociado al versículo
+                });
+                break;  // Si encontramos uno, no necesitamos seguir buscando otros temas en el mismo versículo
+              }
             }
           }
         }
@@ -144,21 +150,22 @@ export async function getVersicleOfLove(req, res) {
     }
   }
 
-  // Verificar si se encontraron versículos de amor
-  if (versiculosDeAmor.length > 0) {
-    // Seleccionar un versículo aleatorio
-    const randomIndex = Math.floor(Math.random() * versiculosDeAmor.length);
-    const randomVersiculo = versiculosDeAmor[randomIndex];
+  // Verificar si se encontraron versículos populares
+  if (versiculosPopulares.length > 0) {
+    // Seleccionar un versículo aleatorio entre los populares
+    const randomIndex = Math.floor(Math.random() * versiculosPopulares.length);
+    const randomVersiculo = versiculosPopulares[randomIndex];
 
     // Devolver el versículo aleatorio
     return res.json({
       libro: randomVersiculo.libro,
       capitulo: randomVersiculo.capitulo,
       versiculo: randomVersiculo.versiculo,
-      texto: randomVersiculo.texto
+      texto: randomVersiculo.texto,
+      tema: randomVersiculo.tema
     });
   } else {
-    // Si no se encontraron versículos de amor
-    return res.status(404).json({ error: 'No se encontraron versículos de amor' });
+    // Si no se encontraron versículos populares
+    return res.status(404).json({ error: 'No se encontraron versículos populares' });
   }
 }
