@@ -6,7 +6,8 @@ import {
     getChapter,
     getVersicles,
     getVersicle,
-    getVersicleOfLove
+    getVersicleOfLove,
+    getRandomVersicle
 } from '../controllers/bible.js';
 
 const router = express.Router();
@@ -31,5 +32,8 @@ router.get('/:libro/capitulos/:capitulo/versiculos/:versiculo', getVersicle)
 
 // Ruta para obtener versículo de amor aleatorio
 router.get('/versiculos/amor/aleatorio', getVersicleOfLove);
+
+// Ruta para obtener versículo aleatorio
+router.get('/versiculos/aleatorios', getRandomVersicle);
 
 export { router as bibleRouter };

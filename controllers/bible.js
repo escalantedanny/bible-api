@@ -169,3 +169,49 @@ export async function getVersicleOfLove(req, res) {
     return res.status(404).json({ error: 'No se encontraron versículos populares' });
   }
 }
+
+export async function getRandomVersicle(req, res) {
+  const libros = Object.keys(biblia);  // Obtener todos los libros disponibles
+  const todosLosVersiculos = [];  // Array para almacenar todos los versículos
+
+  // Iterar sobre cada libro
+  for (const libro of libros) {
+    const contenido = biblia[libro];
+    if (contenido && contenido.chapters) {
+      // Iterar sobre los capítulos del libro
+      for (const chapter of contenido.chapters) {
+        if (chapter.verses) {
+          // Iterar sobre los versículos del capítulo
+          for (const versiculo in chapter.verses) {
+            const texto = chapter.verses[versiculo];
+            // Añadir cada versículo al array de todos los versículos
+            todosLosVersiculos.push({
+              libro: libro,
+              capitulo: chapter.chapter,
+              versiculo: versiculo,
+              texto: texto
+            });
+          }
+        }
+      }
+    }
+  }
+
+  // Verificar si se encontraron versículos
+  if (todosLosVersiculos.length > 0) {
+    // Seleccionar un versículo aleatorio
+    const randomIndex = Math.floor(Math.random() * todosLosVersiculos.length);
+    const randomVersiculo = todosLosVersiculos[randomIndex];
+
+    // Devolver el versículo aleatorio
+    return res.json({
+      libro: randomVersiculo.libro,
+      capitulo: randomVersiculo.capitulo,
+      versiculo: randomVersiculo.versiculo,
+      texto: randomVersiculo.texto
+    });
+  } else {
+    // Si no se encontraron versículos
+    return res.status(404).json({ error: 'No se encontraron versículos' });
+  }
+}
