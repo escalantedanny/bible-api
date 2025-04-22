@@ -1,2 +1,20 @@
 # bible-api
 api for Spanish catholic bible and some other features from Catholic Church
+
+## Install 
+
+ * Clone the repository:
+ 
+ `$ git clone`
+
+  Change for dir into bible-api:
+
+ `$ cd bible-api`
+
+ ## Building bible-api in local
+
+  `$ npm install`
+
+   ## Making bible-api local
+
+  `$ npm serve.js`
