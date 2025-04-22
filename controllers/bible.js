@@ -115,3 +115,50 @@ export async function getVersicle(req, res) {
       res.status(404).json({ error: 'Libro, capítulo o versículo no encontrados' });
     }
 }
+
+export async function getVersicleOfLove(req, res) {
+  // Obtener todos los libros disponibles
+  const libros = Object.keys(biblia);
+  const versiculosDeAmor = []; // Array para almacenar los versículos de amor
+
+  // Buscar versículos que contienen la palabra 'amor' en el texto
+  for (const libro of libros) {
+    const contenido = biblia[libro];
+    if (contenido && contenido.chapters) {
+      for (const chapter of contenido.chapters) {
+        if (chapter.verses) {
+          for (const versiculo in chapter.verses) {
+            const texto = chapter.verses[versiculo];
+            // Verificar si el texto del versículo contiene la palabra 'amor'
+            if (texto.toLowerCase().includes("amor")) {
+              versiculosDeAmor.push({
+                libro: libro,
+                capitulo: chapter.chapter,
+                versiculo: versiculo,
+                texto: texto
+              });
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Verificar si se encontraron versículos de amor
+  if (versiculosDeAmor.length > 0) {
+    // Seleccionar un versículo aleatorio
+    const randomIndex = Math.floor(Math.random() * versiculosDeAmor.length);
+    const randomVersiculo = versiculosDeAmor[randomIndex];
+
+    // Devolver el versículo aleatorio
+    return res.json({
+      libro: randomVersiculo.libro,
+      capitulo: randomVersiculo.capitulo,
+      versiculo: randomVersiculo.versiculo,
+      texto: randomVersiculo.texto
+    });
+  } else {
+    // Si no se encontraron versículos de amor
+    return res.status(404).json({ error: 'No se encontraron versículos de amor' });
+  }
+}
