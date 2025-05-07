@@ -215,3 +215,50 @@ export async function getRandomVersicle(req, res) {
     return res.status(404).json({ error: 'No se encontraron versículos' });
   }
 }
+function quitarTildes(str) {
+  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+export async function searchVersicles(req, res) {
+  const query = req.query.q;
+  if (!query || query.trim().length === 0) {
+    return res.status(400).json({ error: 'Parámetro de búsqueda requerido (q)' });
+  }
+
+  const palabrasClave = quitarTildes(query.toLowerCase()).split(' ').filter(Boolean); 
+  const resultados = [];
+
+  for (const libro in biblia) {
+    const contenido = biblia[libro];
+    if (contenido?.chapters) {
+      for (const chapter of contenido.chapters) {
+        for (const numVersiculo in chapter.verses) {
+          const textoOriginal = chapter.verses[numVersiculo];
+          const textoNormalizado = quitarTildes(textoOriginal.toLowerCase());
+
+          // Separamos el texto en palabras para verificar coincidencias exactas
+          const palabrasTexto = textoNormalizado.split(/\b[\s,.;:¡!¿?"()\[\]]+\b/).filter(Boolean);
+
+          const coincide = palabrasClave.every(palabra =>
+            palabrasTexto.includes(palabra)
+          );
+
+          if (coincide) {
+            resultados.push({
+              libro,
+              capitulo: chapter.chapter,
+              versiculo: numVersiculo,
+              texto: textoOriginal
+            });
+          }
+        }
+      }
+    }
+  }
+
+  if (resultados.length === 0) {
+    return res.status(404).json({ mensaje: 'No se encontraron versículos que coincidan con la búsqueda.' });
+  }
+
+  res.json(resultados);
+}

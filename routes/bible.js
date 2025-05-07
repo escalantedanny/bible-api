@@ -7,33 +7,25 @@ import {
     getVersicles,
     getVersicle,
     getVersicleOfLove,
-    getRandomVersicle
+    getRandomVersicle,
+    searchVersicles
 } from '../controllers/bible.js';
 
 const router = express.Router();
 
-// Ruta para obtener todos los libros
-router.get('/', getBooks);
-
-// Ruta para obtener un libro específico (por ejemplo, "genesis")
-router.get('/:libro', getBook)
-
-// Ruta para obtener capítulos de un libro (por ejemplo, "genesis")
-router.get('/:libro/capitulos', getChapters)
-
-// Ruta para obtener un capítulo específico de un libro (por ejemplo, "genesis" y "1")
-router.get('/:libro/capitulos/:capitulo', getChapter)
-
-// Ruta para obtener múltiples versículos de un capítulo de un libro (por ejemplo, "genesis/1")
-router.get('/:libro/capitulos/:capitulo/versiculos', getVersicles)
-
-// Ruta para obtener un versículo específico de un libro y capítulo (por ejemplo, "genesis", "1", "1")
-router.get('/:libro/capitulos/:capitulo/versiculos/:versiculo', getVersicle)
-
-// Ruta para obtener versículo de amor aleatorio
+// Rutas más específicas al inicio
 router.get('/versiculos/amor/aleatorio', getVersicleOfLove);
-
-// Ruta para obtener versículo aleatorio
 router.get('/versiculos/aleatorios', getRandomVersicle);
+router.get('/search', searchVersicles);
+
+// Luego rutas por parámetro
+router.get('/:libro/capitulos/:capitulo/versiculos/:versiculo', getVersicle);
+router.get('/:libro/capitulos/:capitulo/versiculos', getVersicles);
+router.get('/:libro/capitulos/:capitulo', getChapter);
+router.get('/:libro/capitulos', getChapters);
+router.get('/:libro', getBook);
+
+// Finalmente la raíz
+router.get('/', getBooks);
 
 export { router as bibleRouter };

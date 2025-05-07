@@ -8,5 +8,5 @@ app.use('/libros', bibleRouter);
 
 // Iniciar el servidor
 app.listen(port, () => {
-  console.log(`API escuchando en http://localhost:${port}`);
+  console.log(`API escuchando en http://localhost:${port}/libros`);
 });
