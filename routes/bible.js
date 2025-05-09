@@ -8,12 +8,14 @@ import {
     getVersicle,
     getVersicleOfLove,
     getRandomVersicle,
-    searchVersicles
+    searchVersicles,
+    ping
 } from '../controllers/bible.js';
 
 const router = express.Router();
 
 // Rutas más específicas al inicio
+router.get('/ping', ping)
 router.get('/versiculos/amor/aleatorio', getVersicleOfLove);
 router.get('/versiculos/aleatorios', getRandomVersicle);
 router.get('/search', searchVersicles);

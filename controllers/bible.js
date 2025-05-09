@@ -16,6 +16,14 @@ for (const key in originalBiblia) {
   biblia[key.toLowerCase()] = originalBiblia[key];
 }
 
+export async function ping(req, res) {
+  try{
+    res.json({ status: 'connected' });
+  } catch {
+    res.status(404).json({ error: 'connected' });
+  }
+}
+
 export async function getBooks(req, res) {
     const libros = Object.keys(biblia);
     if (libros.length === 0) {
