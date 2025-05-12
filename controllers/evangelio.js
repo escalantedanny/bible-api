@@ -44,9 +44,9 @@ export async function getEvangelioDelDia(req, res) {
     const secciones = extraerSecciones(resultado.liturgiaDeLaPalabra);
 
     res.json({
-      liturgiaDeLaPalabra: secciones.liturgia.join("\n"),
-      salmo: secciones.salmo.join("\n"),
-      evangelio: secciones.evangelio.join("\n"),
+      liturgiaDeLaPalabra: secciones.liturgia,
+      salmo: secciones.salmo,
+      evangelio: secciones.evangelio,
     });
 
   } catch (error) {
