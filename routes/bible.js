@@ -9,7 +9,8 @@ import {
     getVersicleOfLove,
     getRandomVersicle,
     searchVersicles,
-    ping
+    ping,
+    getEvangelioDelDia
 } from '../controllers/bible.js';
 
 const router = express.Router();
@@ -19,6 +20,7 @@ router.get('/ping', ping)
 router.get('/versiculos/amor/aleatorio', getVersicleOfLove);
 router.get('/versiculos/aleatorios', getRandomVersicle);
 router.get('/search', searchVersicles);
+router.get('/evangelio', getEvangelioDelDia);
 
 // Luego rutas por parámetro
 router.get('/:libro/capitulos/:capitulo/versiculos/:versiculo', getVersicle);
