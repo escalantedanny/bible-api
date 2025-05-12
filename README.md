@@ -17,4 +17,4 @@ API for the Catholic Bible in Spanish and some other functions of the Catholic C
 
    ## Making bible-api local
 
-  `$ npm serve.js`
+  `$ node server.js`
