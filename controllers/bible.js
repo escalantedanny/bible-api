@@ -1,6 +1,5 @@
 import fs from 'fs';
 import path from 'path';
-import puppeteer from 'puppeteer';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { fileURLToPath } from 'url';
