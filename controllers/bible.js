@@ -1,7 +1,5 @@
 import fs from 'fs';
 import path from 'path';
-import axios from 'axios';
-import * as cheerio from 'cheerio';
 import puppeteer from 'puppeteer';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -275,7 +273,10 @@ export async function searchVersicles(req, res) {
 }
 
 export async function getEvangelioDelDia(req, res) {
-  const browser = await puppeteer.launch();
+  const browser = await puppeteer.launch({
+    headless: 'new',
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
+  });
   const page = await browser.newPage();
 
   await page.goto('https://www.eucaristiadiaria.cl/dia.php', {
@@ -287,7 +288,6 @@ export async function getEvangelioDelDia(req, res) {
   const contenido = await page.evaluate(() => {
     const texto = [];
     const contenedor = document.querySelector('div.color_cambio');
-
     if (contenedor) {
       const pTags = contenedor.querySelectorAll('p');
       pTags.forEach(p => {
@@ -295,7 +295,6 @@ export async function getEvangelioDelDia(req, res) {
         if (txt.length > 0) texto.push(txt);
       });
     }
-
     return texto;
   });
 
@@ -305,7 +304,7 @@ export async function getEvangelioDelDia(req, res) {
     return res.status(404).json({ error: 'No se encontró el Evangelio del día' });
   }
 
-  // Estructura del resultado
+  // Procesamiento (tu lógica original)
   const resultado = {
     ritosIniciales: [],
     liturgiaPalabra: {
@@ -323,7 +322,6 @@ export async function getEvangelioDelDia(req, res) {
   for (const linea of contenido) {
     const lower = linea.toLowerCase();
 
-    // Detectar cambios de secciones principales
     if (lower.includes('+ evangelio') || lower.includes('evangelio según san')) {
       seccionActual = 'evangelio';
       continue;
@@ -336,7 +334,6 @@ export async function getEvangelioDelDia(req, res) {
       continue;
     }
 
-    // Detectar y cambiar sub-secciones dentro de LITURGIA DE LA PALABRA
     if (
       lower.includes('lectura de los hechos') ||
       lower.includes('lectura del libro') ||
@@ -359,7 +356,6 @@ export async function getEvangelioDelDia(req, res) {
       subSeccionPalabra = 'segundaLectura';
     }
 
-    // Asignar texto a la sección correspondiente
     if (seccionActual === 'liturgiaPalabra') {
       resultado.liturgiaPalabra[subSeccionPalabra].push(linea);
     } else {
@@ -367,7 +363,6 @@ export async function getEvangelioDelDia(req, res) {
     }
   }
 
-  // Devolver el resultado con saltos de línea legibles
   res.json({
     ritosIniciales: resultado.ritosIniciales.join('\n\n'),
     liturgiaPalabra: {
