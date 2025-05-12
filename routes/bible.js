@@ -9,9 +9,10 @@ import {
     getVersicleOfLove,
     getRandomVersicle,
     searchVersicles,
-    ping,
-    getEvangelioDelDia
+    ping
 } from '../controllers/bible.js';
+
+import { getEvangelioDelDia } from '../controllers/evangelio.js';
 
 const router = express.Router();
 

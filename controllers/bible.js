@@ -1,7 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import axios from 'axios';
-import * as cheerio from 'cheerio';
+
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
@@ -271,99 +270,4 @@ export async function searchVersicles(req, res) {
   }
 
   res.json(resultados);
-}
-
-export async function getEvangelioDelDia(req, res) {
-  try {
-    const { data: html } = await axios.get('https://www.eucaristiadiaria.cl/dia.php');
-    const $ = cheerio.load(html);
-    const contenido = [];
-
-    // Extraer el contenido de las etiquetas <p> dentro del contenedor 'color_cambio'
-    $('div.color_cambio p').each((_, el) => {
-      const text = $(el).text().trim();
-      if (text) contenido.push(text);
-    });
-
-    if (contenido.length === 0) {
-      return res.status(404).json({ error: 'No se encontró el Evangelio del día' });
-    }
-
-    // Inicializar la estructura del resultado
-    const resultado = {
-      ritosIniciales: [],
-      liturgiaPalabra: {
-        primeraLectura: [],
-        salmoResponsorial: [],
-        segundaLectura: [],
-      },
-      evangelio: [],
-      liturgiaEucaristica: [],
-    };
-
-    let seccionActual = 'ritosIniciales';
-    let subSeccionPalabra = 'primeraLectura';
-
-    // Procesar el contenido
-    for (const linea of contenido) {
-      const lower = linea.toLowerCase();
-
-      // Detectar cambios de secciones principales
-      if (lower.includes('+ evangelio') || lower.includes('evangelio según san')) {
-        seccionActual = 'evangelio';
-        continue;
-      } else if (
-        lower.includes('oración sobre las ofrendas') ||
-        lower.includes('comunión') ||
-        lower.includes('después de la comunión')
-      ) {
-        seccionActual = 'liturgiaEucaristica';
-        continue;
-      }
-
-      // Detectar y cambiar sub-secciones dentro de LITURGIA DE LA PALABRA
-      if (
-        lower.includes('lectura de los hechos') ||
-        lower.includes('lectura del libro') ||
-        lower.includes('lectura del profeta') ||
-        lower.includes('lectura del primer libro') ||
-        lower.includes('lectura del segundo libro')
-      ) {
-        seccionActual = 'liturgiaPalabra';
-        subSeccionPalabra = 'primeraLectura';
-      } else if (lower.includes('salmo responsorial')) {
-        seccionActual = 'liturgiaPalabra';
-        subSeccionPalabra = 'salmoResponsorial';
-      } else if (
-        lower.includes('segunda lectura') ||
-        lower.includes('lectura de la carta') ||
-        lower.includes('lectura de la primera carta') ||
-        lower.includes('lectura de la segunda carta')
-      ) {
-        seccionActual = 'liturgiaPalabra';
-        subSeccionPalabra = 'segundaLectura';
-      }
-
-      // Asignar texto a la sección correspondiente
-      if (seccionActual === 'liturgiaPalabra') {
-        resultado.liturgiaPalabra[subSeccionPalabra].push(linea);
-      } else {
-        resultado[seccionActual].push(linea);
-      }
-    }
-
-    // Devolver el resultado con saltos de línea legibles
-    res.json({
-      ritosIniciales: resultado.ritosIniciales.join('\n\n'),
-      liturgiaPalabra: {
-        primeraLectura: resultado.liturgiaPalabra.primeraLectura.join('\n\n'),
-        salmoResponsorial: resultado.liturgiaPalabra.salmoResponsorial.join('\n\n'),
-        segundaLectura: resultado.liturgiaPalabra.segundaLectura.join('\n\n'),
-      },
-      evangelio: resultado.evangelio.join('\n\n'),
-      liturgiaEucaristica: resultado.liturgiaEucaristica.join('\n\n'),
-    });
-  } catch (error) {
-    return res.status(500).json({ error: 'No se pudo obtener el Evangelio del día' });
-  }
 }
