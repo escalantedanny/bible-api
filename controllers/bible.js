@@ -26,7 +26,7 @@ export async function ping(req, res) {
 }
 
 export async function getBooks(req, res) {
-    const libros = Object.keys(biblia);
+    const libros = Object.keys(originalBiblia);
     if (libros.length === 0) {
         return res.status(404).json({ error: 'No se encontraron libros' });
     }
