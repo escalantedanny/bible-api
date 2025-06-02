@@ -20,7 +20,7 @@ const router = express.Router();
 // Rutas más específicas al inicio
 router.get('/ping', ping)
 
-router.get('/santos/hoy', getSaintsOfTheDay);
+router.get('/santos/hoy/:mes/:dia', getSaintsOfTheDay);
 router.get('/versiculos/amor/aleatorio', getVersicleOfLove);
 router.get('/versiculos/aleatorios', getRandomVersicle);
 router.get('/search', searchVersicles);
