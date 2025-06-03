@@ -23,6 +23,7 @@ async function scrapeMonth(month) {
     const anchor = $(el).find("a.Titulodestacados");
     const name = anchor.text().trim();
     const link = anchor.attr("href") || '';
+    const img = anchor.find("img").attr("src") || '';
     const fullLink = link.startsWith('http') ? link : `https://es.catholic.net${link}`;
 
     const rawText = $(el).find("span#art_texto").text().trim();
@@ -38,6 +39,7 @@ async function scrapeMonth(month) {
         date: dateText,
         day: Number(day),
         link: fullLink,
+        img: img
       });
     }
   });
@@ -62,6 +64,7 @@ export async function scrapeAllSaints() {
 
 // Función para tu API (puedes dejarla como estaba)
 export async function getSaintsOfTheDay(req, res) {
+  //scrapeAllSaints()
   try {
     const data = await fs.readFile(santosPath, 'utf-8');
     const santosPorMes = JSON.parse(data);
