@@ -13,13 +13,16 @@ import {
 } from '../controllers/bible.js';
 
 import { getEvangelioDelDia } from '../controllers/evangelio.js';
-import { getSaintsOfTheDay } from '../controllers/santos.js';
+import { 
+    getSaintsOfTheDay,
+    getFaithEvents
+ } from '../controllers/santos.js';
 
 const router = express.Router();
 
 // Rutas más específicas al inicio
 router.get('/ping', ping)
-
+router.get('/events', getFaithEvents);
 router.get('/santos/hoy/:mes/:dia', getSaintsOfTheDay);
 router.get('/versiculos/amor/aleatorio', getVersicleOfLove);
 router.get('/versiculos/aleatorios', getRandomVersicle);

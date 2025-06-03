@@ -11,6 +11,25 @@ const santosPath = path.resolve('./db/santos.json');
 
 const BASE_URL = 'https://es.catholic.net/op/santoral/santoral.html?mes=';
 const DB_PATH = path.resolve(__dirname, '../db/santos.json');
+const EVENTS_PATH = path.resolve(__dirname, '../db/faith_events.json');
+
+export async function getFaithEvents(req, res) {
+  try {
+    const data = await fs.readFile(EVENTS_PATH, 'utf-8');
+    const events = JSON.parse(data);
+
+    // Filtrado opcional por categoría, si se pasa como query param
+    const { category } = req.query;
+    const filtered = category
+      ? events.filter(e => e.category.toLowerCase() === category.toLowerCase())
+      : events;
+
+    return res.json(filtered);
+  } catch (error) {
+    console.error('Error al cargar eventos:', error);
+    return res.status(500).json({ error: 'No se pudieron cargar los eventos' });
+  }
+}
 
 async function scrapeMonth(month) {
   const url = `${BASE_URL}${String(month).padStart(2, '0')}`;
