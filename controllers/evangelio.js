@@ -1,11 +1,35 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
+import dayjs from 'dayjs';
+import 'dayjs/locale/es.js';
+import localizedFormat from 'dayjs/plugin/localizedFormat.js';
+import { parse, format } from 'date-fns';
+import { es } from 'date-fns/locale';
+
+dayjs.extend(localizedFormat);
+dayjs.locale('es');
 
 export async function getEvangelioDelDia(req, res) {
   try {
     const { data: html } = await axios.get('https://www.eucaristiadiaria.cl/dia.php');
     const $ = cheerio.load(html);
     const contenido = [];
+
+
+    const rawFechaTexto = $('div.titulos').first().text().trim();
+    const fechaMatch = rawFechaTexto.match(/(\d{1,2} de \w+ de \d{4})/i);
+
+    let fechaFormateada = null;
+
+    if (fechaMatch) {
+      const fechaTexto = fechaMatch[1].toLowerCase().trim();
+
+      const fecha = parse(fechaTexto, "d 'de' MMMM 'de' yyyy", new Date(), { locale: es });
+
+      if (!isNaN(fecha)) {
+        fechaFormateada = format(fecha, 'dd/MM/yyyy', { locale: es });
+      }
+    }
 
     $('div.color_cambio p').each((_, el) => {
       const text = $(el).text().trim();
@@ -44,6 +68,7 @@ export async function getEvangelioDelDia(req, res) {
     const secciones = extraerSecciones(resultado.liturgiaDeLaPalabra);
 
     res.json({
+      fecha: fechaFormateada,
       liturgiaDeLaPalabra: secciones.liturgia,
       salmo: secciones.salmo,
       evangelio: secciones.evangelio,

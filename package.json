@@ -5,6 +5,7 @@
   "description": "api for Spanish catholic bible and some other features from Catholic Church",
   "main": "index.js",
   "scripts": {
+    "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -21,8 +22,9 @@
   "dependencies": {
     "axios": "^1.9.0",
     "cheerio": "^1.0.0",
+    "date-fns": "^4.1.0",
+    "dayjs": "^1.11.13",
     "express": "^5.1.0",
-    "puppeteer": "^24.8.2",
-    "xml2js": "^0.6.2"
+    "puppeteer": "^24.8.2"
   }
 }
