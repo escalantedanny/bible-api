@@ -1,77 +1,49 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
-import dayjs from 'dayjs';
-import 'dayjs/locale/es.js';
-import localizedFormat from 'dayjs/plugin/localizedFormat.js';
 import { parse, format } from 'date-fns';
 import { es } from 'date-fns/locale';
-
-dayjs.extend(localizedFormat);
-dayjs.locale('es');
 
 export async function getEvangelioDelDia(req, res) {
   try {
     const { data: html } = await axios.get('https://www.eucaristiadiaria.cl/dia.php');
     const $ = cheerio.load(html);
-    const contenido = [];
-
 
     const rawFechaTexto = $('div.titulos').first().text().trim();
     const fechaMatch = rawFechaTexto.match(/(\d{1,2} de \w+ de \d{4})/i);
 
     let fechaFormateada = null;
-
     if (fechaMatch) {
       const fechaTexto = fechaMatch[1].toLowerCase().trim();
-
       const fecha = parse(fechaTexto, "d 'de' MMMM 'de' yyyy", new Date(), { locale: es });
-
       if (!isNaN(fecha)) {
         fechaFormateada = format(fecha, 'dd/MM/yyyy', { locale: es });
       }
     }
 
-    $('div.color_cambio p').each((_, el) => {
-      const text = $(el).text().trim();
-      if (text) contenido.push(text);
-    });
+    let contenido = [];
 
-    if (contenido.length === 0) {
+    const htmlContenido = $('div.color_cambio').html();
+    if (!htmlContenido) {
       return res.status(404).json({ error: 'No se encontró el contenido litúrgico' });
     }
 
-    // Resultado a retornar
-    const resultado = {
-      liturgiaDeLaPalabra: []
-    };
+    const textContenido = htmlContenido
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<[^>]+>/g, '')
+      .split('\n')
+      .map(linea => linea.trim())
+      .filter(linea => linea.length > 0);
 
-    let estado = 'buscando';
+    contenido = textContenido;
 
-    for (const linea of contenido) {
-      const upper = linea.trim().toUpperCase();
-
-      if (upper === 'LITURGIA DE LA PALABRA') {
-        estado = 'liturgia';
-        resultado.liturgiaDeLaPalabra.push(linea);
-        continue;
-      }
-
-      if (estado === 'liturgia') {
-        resultado.liturgiaDeLaPalabra.push(linea);
-        if (linea.includes('\n\nPalabra de Dios')) {
-          estado = 'buscandoSalmo';
-        }
-        continue;
-      }
-    }
-
-    const secciones = extraerSecciones(resultado.liturgiaDeLaPalabra);
+    const secciones = extraerSecciones(contenido);
 
     res.json({
       fecha: fechaFormateada,
       liturgiaDeLaPalabra: secciones.liturgia,
       salmo: secciones.salmo,
       evangelio: secciones.evangelio,
+      oracion: secciones.oracion
     });
 
   } catch (error) {
@@ -80,7 +52,7 @@ export async function getEvangelioDelDia(req, res) {
   }
 }
 
-function extraerSecciones(texto) {
+function extraerSecciones(lineas) {
   const liturgia = [];
   const salmo = [];
   const evangelio = [];
@@ -88,45 +60,51 @@ function extraerSecciones(texto) {
 
   let estado = '';
 
-  for (const linea of texto) {
-    const upper = linea.trim().toUpperCase();
+  for (let linea of lineas) {
+    const texto = linea.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
 
-    if (upper === 'LITURGIA DE LA PALABRA') {
+    if (texto.includes('LITURGIA DE LA PALABRA')) {
       estado = 'liturgia';
-      liturgia.push(linea); // incluir el título
       continue;
     }
-    if (upper.startsWith('SALMO RESPONSORIAL')) {
+    if (texto.includes('SALMO RESPONSORIAL')) {
       estado = 'salmo';
-      salmo.push(linea); // incluir el título
       continue;
     }
-    if (upper === 'EVANGELIO') {
+    if (texto.includes('EVANGELIO') || texto.startsWith('+ EVANGELIO')) {
       estado = 'evangelio';
-      evangelio.push(linea); // incluir el título
       continue;
     }
-    if (upper.startsWith('ORACIÓN SOBRE LAS OFRENDAS')) {
+    if (texto.includes('ORACION SOBRE LAS OFRENDAS')) {
       estado = 'oracion';
-      oracion.push(linea); // incluir el título
       continue;
     }
 
-    if (estado === 'liturgia') {
-      liturgia.push(linea);
-    } else if (estado === 'salmo') {
-      salmo.push(linea);
-    } else if (estado === 'evangelio') {
-      evangelio.push(linea);
-    } else if (estado === 'oracion') {
-      oracion.push(linea);
+    if (
+      texto.includes('PREFACIO') ||
+      texto.includes('ANTIFONA DE COMUNION') ||
+      texto.includes('ORACION DESPUES DE LA COMUNION') ||
+      texto.includes('ORACION DE LOS FIELES')
+    ) {
+      estado = '';
+      continue;
+    }
+
+    switch (estado) {
+      case 'liturgia':
+        liturgia.push(linea);
+        break;
+      case 'salmo':
+        salmo.push(linea);
+        break;
+      case 'evangelio':
+        evangelio.push(linea);
+        break;
+      case 'oracion':
+        oracion.push(linea);
+        break;
     }
   }
 
-  return {
-    liturgia,
-    salmo,
-    evangelio,
-    oracion
-  };
+  return { liturgia, salmo, evangelio, oracion };
 }
