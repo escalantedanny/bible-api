@@ -40,10 +40,10 @@ export async function getEvangelioDelDia(req, res) {
 
     res.json({
       fecha: fechaFormateada,
-      liturgiaDeLaPalabra: secciones.liturgia,
-      salmo: secciones.salmo,
-      evangelio: secciones.evangelio,
-      oracion: secciones.oracion
+      liturgiaDeLaPalabra: secciones.liturgia.map(limpiarHTML),
+      salmo: secciones.salmo.map(limpiarHTML),
+      evangelio: secciones.evangelio.map(limpiarHTML),
+      oracion: secciones.oracion.map(limpiarHTML)
     });
 
   } catch (error) {
@@ -107,4 +107,8 @@ function extraerSecciones(lineas) {
   }
 
   return { liturgia, salmo, evangelio, oracion };
+}
+
+function limpiarHTML(texto) {
+  return he.decode(texto.replace(/\s+/g, ' ').trim());
 }
