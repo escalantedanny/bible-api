@@ -32,8 +32,13 @@ export async function getEvangelioDelDia(req, res) {
       .replace(/<br\s*\/?>/gi, '\n')
       .replace(/<[^>]+>/g, '')
       .split('\n')
-      .map(linea => linea.trim())
-      .filter(linea => linea.length > 0);
+      .map(l => l.trim())
+      .filter(l =>
+        l.length > 0 &&
+        !/^\d+$/.test(l) &&         // elimina números solos
+        !/^\|+$/.test(l) &&         // elimina barras: |  |  |
+        !/^[\W]+$/.test(l)          // elimina líneas sin letras
+      );
 
     contenido = textContenido;
 
